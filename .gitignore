@@ -1,0 +1,20 @@
+# Environment secrets
+.env
+
+# Airflow runtime logs
+airflow/logs/
+
+# MinIO S3 data
+minio/data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,206 @@
+# docker-compose.yml
+
+# Определяем все сервисы (контейнеры), которые составляют наш проект
+services:
+
+  # --- 1. Хранилище данных (S3) ---
+  minio:
+    image: minio/minio:latest
+    container_name: hw4-minio
+    # Команда для запуска Minio: запустить сервер, указать папку для данных
+    # и адрес для веб-консоли.
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # API port
+      - "9001:9001" # Console UI port
+    environment:
+      # Учетные данные, которые будут использоваться всеми остальными сервисами
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      # Привязываем папку на хосте к папке внутри контейнера для сохранения данных
+      - ./minio/data:/data
+    networks:
+      - mlsd-network
+    # Проверка готовности: ждем, пока API Minio не начнет отвечать
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- 2. Хранилище признаков (Feature Store) ---
+  redis:
+    image: redis:7-alpine
+    container_name: hw4-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - mlsd-network
+    # Проверка готовности: ждем, пока Redis не ответит PONG на команду PING
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # --- 3. Вычислительный кластер Spark ---
+  spark-master:
+    build:
+      context: .
+      dockerfile: ./spark/Dockerfile
+    image: mlsd-spark-master:${IMAGE_TAG:-local}
+    container_name: hw4-spark-master
+    ports:
+      - "8080:8080" # Spark Master Web UI
+      - "7077:7077" # Spark Master RPC port
+    environment:
+      # Передаем учетные данные Minio. 
+      # Дублируем их в стандартные переменные AWS, так как Spark/Hadoop ищут именно их.
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-minioadmin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    networks:
+      - mlsd-network
+    # Проверка готовности: ждем, пока веб-интерфейс мастера не станет доступен
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  spark-worker-1:
+    build:
+      context: .
+      dockerfile: ./spark/Dockerfile
+    image: mlsd-spark-worker-1:${IMAGE_TAG:-local}
+    container_name: hw4-spark-worker-1
+    # Воркер должен запуститься только после мастера
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081" # Spark Worker Web UI
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      # Также добавляем AWS переменные для воркера
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-minioadmin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+      # Указываем порт для UI воркера
+      - SPARK_WORKER_WEBUI_PORT=8081
+      - SPARK_WORKER_CORES=3
+      - SPARK_WORKER_MEMORY=24g
+
+    # Команда для запуска воркера и его регистрации на мастере
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    networks:
+      - mlsd-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres:
+    image: postgres:13
+    container_name: hw4-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+    networks:
+      - mlsd-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U airflow -d airflow" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  airflow:
+    build:
+      context: .
+      dockerfile: ./airflow/Dockerfile
+    image: mlsd-airflow:${IMAGE_TAG:-local}
+    container_name: hw4-airflow
+    # Важно: оставляем пользователя root, чтобы у него были права писать в сокет
+    user: "0:0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      spark-master:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8088:8080"
+    environment:
+      - AIRFLOW__API__AUTH_BACKEND=airflow.api.auth.backend.basic_auth
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__PARALLELISM=4
+      - AIRFLOW__CORE__DAG_CONCURRENCY=2
+      - AIRFLOW__WEBSERVER__WORKERS=2
+      - _AIRFLOW_DB_UPGRADE=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-minioadmin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - AIRFLOW_UID=50000
+      - AIRFLOW_GID=0
+    volumes:
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/dags:/opt/airflow/dags
+      - ./spark-jobs:/opt/airflow/spark-jobs
+      # --- ДОБАВИТЬ ВОТ ЭТУ СТРОКУ НИЖЕ ---
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: standalone
+    networks:
+      - mlsd-network
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  mlflow:
+    build:
+      context: ./mlflow
+    container_name: hw4-mlflow
+    ports:
+      - "5000:5000"
+      - "6000:6000"
+    environment:
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - AWS_ACCESS_KEY_ID=minioadmin # <-- Лучше использовать переменные
+      - AWS_SECRET_ACCESS_KEY=minioadmin # <-- Лучше использовать переменные
+      - MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root s3://mlflow/
+    networks:
+      - mlsd-network
+    depends_on:
+      - minio
+    healthcheck:
+      # <-- ДОБАВИТЬ ЭТОТ БЛОК
+      test: [ "CMD", "curl", "-f", "http://localhost:5000" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+# Определяем общую сеть для всех сервисов, чтобы они могли общаться по именам
+networks:
+  mlsd-network:
+    driver: bridge
+
+volumes:
+  postgres_db:
