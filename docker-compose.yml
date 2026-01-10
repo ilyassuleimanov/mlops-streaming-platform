@@ -122,6 +122,76 @@ services:
       timeout: 5s
       retries: 5
 
+  # --- 4. Kafka Cluster (KRaft Mode) ---
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: hw4-kafka
+    ports:
+      - "29092:29092"
+    environment:
+      # KRaft settings
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=controller,broker
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      # Cluster ID (required for KRaft)
+      - KAFKA_CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
+      # Single-node configuration
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+    networks:
+      - mlsd-network
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # --- 4b. Kafka UI ---
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: hw4-kafka-ui
+    ports:
+      - "8090:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=hw4-cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    networks:
+      - mlsd-network
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # --- 5. Inference Service ---
+  inference:
+    build:
+      context: ./inference
+    container_name: hw4-inference
+    depends_on:
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-minioadmin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+    networks:
+      - mlsd-network
+    volumes:
+      - ./inference/logs:/app/logs
+    restart: always
+
   airflow:
     build:
       context: .
@@ -161,7 +231,6 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/dags:/opt/airflow/dags
       - ./spark-jobs:/opt/airflow/spark-jobs
-      # --- ДОБАВИТЬ ВОТ ЭТУ СТРОКУ НИЖЕ ---
       - /var/run/docker.sock:/var/run/docker.sock
     command: standalone
     networks:
@@ -191,7 +260,6 @@ services:
     depends_on:
       - minio
     healthcheck:
-      # <-- ДОБАВИТЬ ЭТОТ БЛОК
       test: [ "CMD", "curl", "-f", "http://localhost:5000" ]
       interval: 10s
       timeout: 5s
