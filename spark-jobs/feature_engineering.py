@@ -39,7 +39,7 @@ def main():
     ratings_df = spark.read.parquet(args.input_path)
     movies_df = spark.read.csv(f"{movies_input_path}/movies.csv", header=True, inferSchema=True)
 
-    # **НОВОЕ ИЗМЕНЕНИЕ**: Создаем бинарную целевую переменную 'target'
+    # Создаём бинарную целевую переменную (rating >= 4.0 → положительный класс)
     ratings_df = ratings_df.withColumn("target", when(col("rating") >= 4.0, 1).otherwise(0))
     
     # Очистка от пустых значений
@@ -49,9 +49,7 @@ def main():
     print("Данные успешно загружены, очищены, добавлена целевая переменная.")
     ratings_df.printSchema()
 
-    # --- НАЧАЛО НЕИЗМЕННОГО БЛОКА ЛОГИКИ ИЗ ВАШЕГО СКРИПТА ---
-
-    # 4. Расчет простых признаков. ИСПОЛЬЗУЕМ collect_set для movie_ids!
+    # 4. Расчёт простых признаков. Используем collect_set для movie_ids
     user_simple_features_df = ratings_df.groupBy("userId").agg(
         avg("rating").alias("avg_rating"),
         count("movieId").alias("num_movies"), # count() будет быстрее, чем countDistinct, если нет дублей
@@ -102,9 +100,7 @@ def main():
     final_user_features_df = user_simple_features_df.join(genre_profile_df, "userId", "left")
     print("Все признаки по пользователям объединены.")
 
-    # --- КОНЕЦ НЕИЗМЕННОГО БЛОКА ЛОГИКИ ---
-
-    # **НОВОЕ ИЗМЕНЕНИЕ**: Объединяем признаки пользователя с исходными данными
+    # Объединяем признаки пользователя с исходными данными для обучения
     # Это создает готовый для обучения датасет, где каждая строка - это оценка,
     # обогащенная признаками пользователя, который ее поставил.
     training_ready_df = ratings_df.join(final_user_features_df, "userId", "inner")

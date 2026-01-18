@@ -118,21 +118,6 @@ with DAG(
             f"--output_path s3a://{MINIO_BUCKET_FEATURES}/train_features.parquet"
         ),
     )
-    # features_engineering = BashOperator(
-    #     task_id='features_engineering',
-    #     bash_command=(
-    #         "spark-submit "
-    #         f"--master {SPARK_MASTER_URL} "
-    #         "--deploy-mode client "
-    #         "--driver-memory 4G "
-    #         "--executor-memory 20G "
-    #         "--conf spark.executor.cores=3 "
-    #         "--conf spark.sql.shuffle.partitions=24 "
-    #         "--conf spark.default.parallelism=24 "
-    #         f"{S3_SPARK_CONFIG} "
-    #         f"{FEATURE_ENGINEERING_JOB_PATH}"
-    #     ),
-    # )
 
     # Задача 4.2: Запустить инженерию признаков для ТЕСТОВОЙ выборки
     features_engineering_test = BashOperator(

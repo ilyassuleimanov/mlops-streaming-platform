@@ -133,11 +133,11 @@ create_user_with_retry
 
 echo -e "\n--- [ЭТАП 5/7] Ожидание и запуск DAG через REST API ---"
 echo "Ожидаем, пока DAG '$DAG_ID' не появится в API..."
-ATTEMTS=30
-for i in $(seq 1 $ATTEMTS); do
+ATTEMPTS=30
+for i in $(seq 1 $ATTEMPTS); do
     http_code=$(docker compose exec "$AIRFLOW_SERVICE_NAME" curl -s -o /dev/null -w "%{http_code}" -u "${API_USER}:${API_PASS}" "${AIRFLOW_API_URL}/dags/${DAG_ID}")
-    if [ "$http_code" -eq 200 ]; then echo "✅ DAG '$DAG_ID' найден."; break; else echo "Ожидаем DAG... ($i/$ATTEMTS, http: $http_code)"; sleep 10; fi
-    if [ $i -eq $ATTEMTS ]; then echo "❌ DAG '$DAG_ID' не появился в API."; exit 1; fi
+    if [ "$http_code" -eq 200 ]; then echo "✅ DAG '$DAG_ID' найден."; break; else echo "Ожидаем DAG... ($i/$ATTEMPTS, http: $http_code)"; sleep 10; fi
+    if [ $i -eq $ATTEMPTS ]; then echo "❌ DAG '$DAG_ID' не появился в API."; exit 1; fi
 done
 echo "Включаем (unpause) DAG '$DAG_ID'..."
 docker compose exec "$AIRFLOW_SERVICE_NAME" curl -X PATCH -u "${API_USER}:${API_PASS}" "${AIRFLOW_API_URL}/dags/${DAG_ID}" -H "Content-Type: application/json" -d '{"is_paused": false}'

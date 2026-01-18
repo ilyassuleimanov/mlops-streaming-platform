@@ -1,0 +1,493 @@
+INFO: IMAGE_TAG = suleimanov_ilias
+--- [ЭТАП 0/7] Очистка окружения ---
+Удаляем старые контейнеры, volumes и локальные образы...
+ Container hw4-airflow  Stopping
+ Container hw4-inference  Stopping
+ Container hw4-spark-worker-1  Stopping
+ Container hw4-kafka-ui  Stopping
+ Container hw4-airflow  Stopped
+ Container hw4-airflow  Removing
+ Container hw4-spark-worker-1  Stopped
+ Container hw4-spark-worker-1  Removing
+ Container hw4-airflow  Removed
+ Container hw4-postgres  Stopping
+ Container hw4-spark-worker-1  Removed
+ Container hw4-spark-master  Stopping
+ Container hw4-postgres  Stopped
+ Container hw4-postgres  Removing
+ Container hw4-postgres  Removed
+ Container hw4-spark-master  Stopped
+ Container hw4-spark-master  Removing
+ Container hw4-spark-master  Removed
+ Container hw4-kafka-ui  Stopped
+ Container hw4-kafka-ui  Removing
+ Container hw4-kafka-ui  Removed
+ Container hw4-inference  Stopped
+ Container hw4-inference  Removing
+ Container hw4-inference  Removed
+ Container hw4-redis  Stopping
+ Container hw4-mlflow  Stopping
+ Container hw4-kafka  Stopping
+ Container hw4-redis  Stopped
+ Container hw4-redis  Removing
+ Container hw4-redis  Removed
+ Container hw4-kafka  Stopped
+ Container hw4-kafka  Removing
+ Container hw4-kafka  Removed
+ Container hw4-mlflow  Stopped
+ Container hw4-mlflow  Removing
+ Container hw4-mlflow  Removed
+ Container hw4-minio  Stopping
+ Container hw4-minio  Stopped
+ Container hw4-minio  Removing
+ Container hw4-minio  Removed
+ Image mlsd-airflow:suleimanov_ilias  Removing
+ Image mlsd-spark-master:suleimanov_ilias  Removing
+ Image mlsd-spark-worker-1:suleimanov_ilias  Removing
+ Image hw4-inference:latest  Removing
+ Image hw4-mlflow:latest  Removing
+ Volume hw4_postgres_db  Removing
+ Network hw4_mlsd-network  Removing
+ Volume hw4_postgres_db  Removed
+ Network hw4_mlsd-network  Removed
+ Image mlsd-airflow:suleimanov_ilias  Removed
+ Image mlsd-spark-master:suleimanov_ilias  Removed
+ Image hw4-mlflow:latest  Removed
+ Image mlsd-spark-worker-1:suleimanov_ilias  Removed
+ Image hw4-inference:latest  Removed
+--- [ЭТАП 1/7] Сборка Docker-образов ---
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.36kB done
+#1 DONE 0.0s
+
+#2 [inference internal] load build definition from Dockerfile
+#2 transferring dockerfile: 426B done
+#2 DONE 0.0s
+
+#3 [spark-master internal] load build definition from Dockerfile
+#3 transferring dockerfile: 2.12kB done
+#3 DONE 0.0s
+
+#4 [mlflow internal] load build definition from Dockerfile
+#4 transferring dockerfile: 457B done
+#4 DONE 0.0s
+
+#5 [airflow internal] load build definition from Dockerfile
+#5 transferring dockerfile: 2.40kB done
+#5 DONE 0.0s
+
+#6 [spark-worker-1 internal] load metadata for docker.io/apache/spark-py:v3.4.0
+#6 ...
+
+#7 [auth] apache/airflow:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [auth] library/python:pull token for registry-1.docker.io
+#8 DONE 0.0s
+
+#9 [auth] apache/spark-py:pull token for registry-1.docker.io
+#9 DONE 0.0s
+
+#10 [airflow internal] load metadata for docker.io/apache/airflow:2.8.1-python3.10
+#10 DONE 1.6s
+
+#11 [inference internal] load metadata for docker.io/library/python:3.10-slim
+#11 ...
+
+#6 [spark-worker-1 internal] load metadata for docker.io/apache/spark-py:v3.4.0
+#6 DONE 1.6s
+
+#12 [spark-worker-1 internal] load .dockerignore
+#12 transferring context: 2B done
+#12 DONE 0.0s
+
+#13 [spark-worker-1 internal] load build context
+#13 transferring context: 510B done
+#13 DONE 0.0s
+
+#14 [spark-worker-1 1/5] FROM docker.io/apache/spark-py:v3.4.0@sha256:5f6a8d82dd2667cedcdeb10d3c899ce2b91bc4e1c1bfc0abbc903829291ced6b
+#14 resolve docker.io/apache/spark-py:v3.4.0@sha256:5f6a8d82dd2667cedcdeb10d3c899ce2b91bc4e1c1bfc0abbc903829291ced6b 0.0s done
+#14 DONE 0.0s
+
+#15 [spark-master 3/5] RUN pip install --no-cache-dir -r requirements.txt
+#15 CACHED
+
+#16 [spark-master 4/5] RUN apt-get update && apt-get install -y wget &&     wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar -P /opt/spark/jars/ &&     wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar -P /opt/spark/jars/ &&     apt-get remove -y wget && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+#16 CACHED
+
+#17 [spark-master 2/5] COPY spark/requirements.txt .
+#17 CACHED
+
+#18 [spark-master 5/5] COPY spark-jobs /opt/spark/jobs
+#18 CACHED
+
+#19 [airflow  1/10] FROM docker.io/apache/airflow:2.8.1-python3.10@sha256:9e6fba276a0bdb6a13def5320b960a94c1ab074420b715828925bfdb2ecbebc5
+#19 resolve docker.io/apache/airflow:2.8.1-python3.10@sha256:9e6fba276a0bdb6a13def5320b960a94c1ab074420b715828925bfdb2ecbebc5 0.0s done
+#19 DONE 0.0s
+
+#20 [airflow internal] load build context
+#20 transferring context: 3.94kB done
+#20 DONE 0.0s
+
+#21 [airflow  2/10] RUN apt-get update && apt-get install -y     curl     unzip     default-jre     build-essential     python3-dev     gettext-base     wget     postgresql-client     libpq-dev     && apt-get clean && rm -rf /var/lib/apt/lists/*
+#21 CACHED
+
+#22 [airflow  4/10] RUN set -eux;     cd /tmp;     SPARK_TGZ="spark-3.4.0-bin-hadoop3.tgz";     SPARK_URL="https://archive.apache.org/dist/spark/spark-3.4.0/${SPARK_TGZ}";     wget -q "$SPARK_URL";     tar -xzf "$SPARK_TGZ" -C /opt;     mv /opt/spark-3.4.0-bin-hadoop3 /opt/spark;     rm -f "$SPARK_TGZ";
+#22 CACHED
+
+#23 [airflow  3/10] RUN curl -sSLo /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-arm64/mc &&     chmod +x /usr/local/bin/mc
+#23 CACHED
+
+#24 [airflow  6/10] COPY airflow/requirements.txt .
+#24 CACHED
+
+#25 [airflow  5/10] RUN set -eux;     cd /opt/spark/jars;     wget -q https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar;     wget -q https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
+#25 CACHED
+
+#26 [airflow  7/10] RUN pip install -r requirements.txt --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.8.1/constraints-3.10.txt"
+#26 CACHED
+
+#11 [inference internal] load metadata for docker.io/library/python:3.10-slim
+#11 DONE 1.7s
+
+#27 [airflow  8/10] COPY airflow/dags /opt/airflow/dags
+#27 DONE 0.0s
+
+#28 [inference internal] load .dockerignore
+#28 transferring context: 2B done
+#28 DONE 0.0s
+
+#29 [mlflow internal] load metadata for docker.io/library/python:3.9-slim
+#29 DONE 1.7s
+
+#30 [inference internal] load build context
+#30 transferring context: 74B done
+#30 DONE 0.0s
+
+#31 [mlflow internal] load .dockerignore
+#31 transferring context: 2B done
+#31 DONE 0.0s
+
+#32 [mlflow internal] load build context
+#32 transferring context: 71B done
+#32 DONE 0.0s
+
+#33 [inference 1/6] FROM docker.io/library/python:3.10-slim@sha256:f5d029fe39146b08200bcc73595795ac19b85997ad0e5001a02c7c32e8769efa
+#33 resolve docker.io/library/python:3.10-slim@sha256:f5d029fe39146b08200bcc73595795ac19b85997ad0e5001a02c7c32e8769efa 0.0s done
+#33 DONE 0.1s
+
+#34 [inference 5/6] RUN pip install --no-cache-dir -r requirements.txt
+#34 CACHED
+
+#35 [inference 4/6] COPY requirements.txt .
+#35 CACHED
+
+#36 [inference 3/6] RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     && rm -rf /var/lib/apt/lists/*
+#36 CACHED
+
+#37 [inference 2/6] WORKDIR /app
+#37 CACHED
+
+#38 [inference 6/6] COPY queue_consumer.py .
+#38 CACHED
+
+#39 [mlflow 1/6] FROM docker.io/library/python:3.9-slim@sha256:2d97f6910b16bd338d3060f261f53f144965f755599aab1acda1e13cf1731b1b
+#39 resolve docker.io/library/python:3.9-slim@sha256:2d97f6910b16bd338d3060f261f53f144965f755599aab1acda1e13cf1731b1b 0.0s done
+#39 DONE 0.0s
+
+#40 [mlflow 4/6] COPY requirements.txt .
+#40 CACHED
+
+#41 [mlflow 5/6] RUN pip install --no-cache-dir -r requirements.txt
+#41 CACHED
+
+#42 [mlflow 3/6] WORKDIR /mlflow_app
+#42 CACHED
+
+#43 [mlflow 2/6] RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+#43 CACHED
+
+#44 [airflow  9/10] COPY spark-jobs /opt/airflow/spark-jobs
+#44 DONE 0.1s
+
+#45 [mlflow 6/6] COPY train_model.py .
+#45 CACHED
+
+#46 [mlflow] exporting to image
+#46 exporting layers done
+#46 exporting manifest sha256:6878a1969af663dc8c990081a106bdd20d8f25d713e9dd9965605a4a29827551 0.0s done
+#46 exporting config sha256:fbc0defcf7a26453ce693f5061049ff6a1f8cfbde1540d77364bdee2168b3975 0.0s done
+#46 exporting attestation manifest sha256:a601d7de5348cbcd4a28996f9ba86d66ed9f0124aa07c436dcb352af56f1e704 0.0s done
+#46 exporting manifest list sha256:cc77d06611e1e44c789df946b4b9b643964e3f4220d5edce95c26b4cbd95997d 0.0s done
+#46 naming to docker.io/library/hw4-mlflow:latest done
+#46 unpacking to docker.io/library/hw4-mlflow:latest
+#46 ...
+
+#47 [airflow 10/10] RUN mkdir -p /opt/airflow/logs /opt/airflow/plugins &&     chown -R 50000:0 /opt/airflow/dags /opt/airflow/spark-jobs /opt/airflow/logs /opt/airflow/plugins &&     chmod -R 775 /opt/airflow/dags /opt/airflow/spark-jobs /opt/airflow/logs /opt/airflow/plugins
+#47 DONE 0.7s
+
+#48 [airflow] exporting to image
+#48 exporting layers 0.1s done
+#48 exporting manifest sha256:427f59b1075b256fc448ebffe646f9ad7216408631fd7269b6ad7743c343746e 0.0s done
+#48 exporting config sha256:00e412da7e83cb4e6796e195b6eae1c1f74d50034db0cccdd84a31055e3fa755 0.0s done
+#48 exporting attestation manifest sha256:7643e5a1afb9392c607eaa68d5c6079ec891b1bcd0317bc28a77efb74600fbe7 0.0s done
+#48 exporting manifest list sha256:9017b8eefaa84258ca1fc5ae8cb5e03b39b918837318f3955b81b3453375053c 0.0s done
+#48 naming to docker.io/library/mlsd-airflow:suleimanov_ilias done
+#48 unpacking to docker.io/library/mlsd-airflow:suleimanov_ilias
+#48 ...
+
+#49 [spark-master] exporting to image
+#49 exporting layers 0.0s done
+#49 exporting manifest sha256:949762075938fdeefbbe4490517dca7dcb49f156a9b6e08a18edfb3396b79ae3 done
+#49 exporting config sha256:1b1003300d29e12cc69f65d8bb54a53996403a101b6709479a46101a9416faff done
+#49 exporting attestation manifest sha256:7b5bafcfefaf54393c07b2db17f236caf7990e62b3181aa34f692a958715a31c 0.0s done
+#49 exporting manifest list sha256:c3f69f933fb912c426abd55a6fb68fea481cad60c0ea3183eab073035316722e 0.0s done
+#49 naming to docker.io/library/mlsd-spark-master:suleimanov_ilias done
+#49 unpacking to docker.io/library/mlsd-spark-master:suleimanov_ilias 6.7s done
+#49 DONE 6.9s
+
+#50 [spark-worker-1] exporting to image
+#50 exporting layers done
+#50 exporting manifest sha256:970e300636c54b8652a9bcb99e171467976eb1e878dd64db54546d1851d00c67 done
+#50 exporting config sha256:a4a149fbc12ac5b7e84e949a5c60e2ef0b5fc3a8371722d2e6cc85c5a5df8ef5 done
+#50 exporting attestation manifest sha256:777c28ee7cf2c1086215cb23cd6c315f250d2113e0e68f23ae121db647dd8b9a 0.0s done
+#50 exporting manifest list sha256:0711ec02a642ea6135d66ec1ab0fdba5b8e24834900a90b71dcfa2b60f9c35fc 0.0s done
+#50 naming to docker.io/library/mlsd-spark-worker-1:suleimanov_ilias done
+#50 unpacking to docker.io/library/mlsd-spark-worker-1:suleimanov_ilias 6.7s done
+#50 DONE 6.9s
+
+#51 [spark-master] resolving provenance for metadata file
+#51 DONE 0.0s
+
+#52 [spark-worker-1] resolving provenance for metadata file
+#52 DONE 0.0s
+
+#53 [inference] exporting to image
+#53 exporting layers done
+#53 exporting manifest sha256:6564750904d65c6f6715eb372a9032f080e7f9ab59ac88db28c5f9a3e3d67618 done
+#53 exporting config sha256:f189a343b74debe07f4fc545b85eaca35652bdeb1607dfa34a39e043cd7915e0 0.0s done
+#53 exporting attestation manifest sha256:5553132c1e702580a468bbf6f7a5098dc8e0c215b2b0b33fdf5a9db3433a60bf 0.0s done
+#53 exporting manifest list sha256:4d6af214511dfc563e9d3313fab097e9ddf8630140a546bbcbceac2f3977dad4 0.0s done
+#53 naming to docker.io/library/hw4-inference:latest done
+#53 unpacking to docker.io/library/hw4-inference:latest
+#53 ...
+
+#46 [mlflow] exporting to image
+#46 unpacking to docker.io/library/hw4-mlflow:latest 8.5s done
+#46 DONE 8.6s
+
+#54 [mlflow] resolving provenance for metadata file
+#54 DONE 0.0s
+
+#48 [airflow] exporting to image
+#48 ...
+
+#53 [inference] exporting to image
+#53 unpacking to docker.io/library/hw4-inference:latest 10.4s done
+#53 DONE 10.6s
+
+#55 [inference] resolving provenance for metadata file
+#55 DONE 0.0s
+
+#48 [airflow] exporting to image
+#48 unpacking to docker.io/library/mlsd-airflow:suleimanov_ilias 20.0s done
+#48 DONE 20.2s
+
+#56 [airflow] resolving provenance for metadata file
+#56 DONE 0.0s
+ mlsd-airflow:suleimanov_ilias  Built
+ hw4-inference  Built
+ mlsd-spark-master:suleimanov_ilias  Built
+ mlsd-spark-worker-1:suleimanov_ilias  Built
+ hw4-mlflow  Built
+
+--- [ЭТАП 2/7] Запуск всех сервисов в фоновом режиме ---
+ Network hw4_mlsd-network  Creating
+ Network hw4_mlsd-network  Created
+ Volume hw4_postgres_db  Creating
+ Volume hw4_postgres_db  Created
+ Container hw4-redis  Creating
+ Container hw4-minio  Creating
+ Container hw4-postgres  Creating
+ Container hw4-kafka  Creating
+ Container hw4-spark-master  Creating
+ Container hw4-spark-master  Created
+ Container hw4-spark-worker-1  Creating
+ Container hw4-postgres  Created
+ Container hw4-redis  Created
+ Container hw4-minio  Created
+ Container hw4-airflow  Creating
+ Container hw4-mlflow  Creating
+ Container hw4-kafka  Created
+ Container hw4-kafka-ui  Creating
+ Container hw4-kafka-ui  Created
+ Container hw4-mlflow  Created
+ Container hw4-inference  Creating
+ Container hw4-spark-worker-1  Created
+ Container hw4-airflow  Created
+ Container hw4-inference  Created
+ Container hw4-spark-master  Starting
+ Container hw4-redis  Starting
+ Container hw4-minio  Starting
+ Container hw4-postgres  Starting
+ Container hw4-kafka  Starting
+ Container hw4-kafka  Started
+ Container hw4-kafka  Waiting
+ Container hw4-minio  Started
+ Container hw4-mlflow  Starting
+ Container hw4-redis  Started
+ Container hw4-postgres  Started
+ Container hw4-spark-master  Started
+ Container hw4-spark-worker-1  Starting
+ Container hw4-postgres  Waiting
+ Container hw4-spark-master  Waiting
+ Container hw4-minio  Waiting
+ Container hw4-redis  Waiting
+ Container hw4-mlflow  Started
+ Container hw4-redis  Waiting
+ Container hw4-mlflow  Waiting
+ Container hw4-kafka  Waiting
+ Container hw4-spark-worker-1  Started
+ Container hw4-redis  Healthy
+ Container hw4-redis  Healthy
+ Container hw4-postgres  Healthy
+ Container hw4-minio  Healthy
+ Container hw4-spark-master  Healthy
+ Container hw4-airflow  Starting
+ Container hw4-mlflow  Healthy
+ Container hw4-airflow  Started
+ Container hw4-kafka  Healthy
+ Container hw4-kafka-ui  Starting
+ Container hw4-kafka-ui  Started
+ Container hw4-kafka  Healthy
+ Container hw4-inference  Starting
+ Container hw4-inference  Started
+
+--- [ЭТАП 3/7] Ожидание полной готовности сервисов ---
+==> Ожидание healthcheck для сервиса 'postgres' (таймаут: 60s)...
+✅ Сервис 'postgres' готов.
+==> Ожидание healthcheck для сервиса 'minio' (таймаут: 60s)...
+✅ Сервис 'minio' готов.
+==> Ожидание healthcheck для сервиса 'redis' (таймаут: 60s)...
+✅ Сервис 'redis' готов.
+==> Ожидание healthcheck для сервиса 'spark-master' (таймаут: 60s)...
+✅ Сервис 'spark-master' готов.
+==> Ожидание healthcheck для сервиса 'spark-worker-1' (таймаут: 60s)...
+✅ Сервис 'spark-worker-1' готов.
+==> Ожидание healthcheck для сервиса 'kafka' (таймаут: 60s)...
+✅ Сервис 'kafka' готов.
+==> Ожидание healthcheck для сервиса 'mlflow' (таймаут: 120s)...
+✅ Сервис 'mlflow' готов.
+==> Ожидание healthcheck для сервиса 'airflow' (таймаут: 300s)...
+......✅ Сервис 'airflow' готов.
+
+--- [ЭТАП 4/7] Создание/Обновление пользователя в Airflow ---
+[2026-01-18T21:58:33+03:00] Попытка 1/7: создаём/обновляем пользователя 'hw4user' (email: hw4user@example.com)...
+=== Вывод создания пользователя ===
+/home/airflow/.local/lib/python3.10/site-packages/airflow/configuration.py:724 DeprecationWarning: The auth_backend option in [api] has been renamed to auth_backends - the old setting has been used, but please update your config.
+/home/airflow/.local/lib/python3.10/site-packages/airflow/configuration.py:747 DeprecationWarning: The auth_backend option in [api] has been renamed to auth_backends - the old setting has been used, but please update your config.
+/home/airflow/.local/lib/python3.10/site-packages/airflow/configuration.py:761 FutureWarning: The auth_backends setting in [api] has had airflow.api.auth.backend.session added in the running config, which is needed by the UI. Please update your config before Apache Airflow 3.0.
+/home/airflow/.local/lib/python3.10/site-packages/airflow/models/dag.py:450 DeprecationWarning: The dag_concurrency option in [core] has been renamed to max_active_tasks_per_dag - the old setting has been used, but please update your config.
+/home/airflow/.local/lib/python3.10/site-packages/airflow/models/dag.py:3854 DeprecationWarning: The dag_concurrency option in [core] has been renamed to max_active_tasks_per_dag - the old setting has been used, but please update your config.
+/home/airflow/.local/lib/python3.10/site-packages/flask_limiter/extension.py:336 UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+[[34m2026-01-18T18:58:35.412+0000[0m] {[34moverride.py:[0m1458} INFO[0m - Added user hw4user[0m
+User "hw4user" created with role "Admin"
+=== Конец вывода ===
+ℹ️ Пользователь создан или уже существовал. Проверяем API...
+✅ API аутентификация успешна.
+
+--- [ЭТАП 5/7] Ожидание и запуск DAG через REST API ---
+Ожидаем, пока DAG 'mlsd_hw4' не появится в API...
+✅ DAG 'mlsd_hw4' найден.
+Включаем (unpause) DAG 'mlsd_hw4'...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   987  100   967  100    20   8921    184 --:--:-- --:--:-- --:--:--  9138
+{
+  "dag_id": "mlsd_hw4",
+  "default_view": "grid",
+  "description": "Full ML pipeline for MovieLens with model training",
+  "file_token": "Ii9vcHQvYWlyZmxvdy9kYWdzL2h3NF9kYWcucHki.3PrEvRYmJTTa2WV880ssTIqYxqQ",
+  "fileloc": "/opt/airflow/dags/hw4_dag.py",
+  "has_import_errors": false,
+  "has_task_concurrency_limits": false,
+  "is_active": true,
+  "is_paused": false,
+  "is_subdag": false,
+  "last_expired": null,
+  "last_parsed_time": "2026-01-18T18:58:13.981693+00:00",
+  "last_pickled": null,
+  "max_active_runs": 16,
+  "max_active_tasks": 2,
+  "next_dagrun": null,
+  "next_dagrun_create_after": null,
+  "next_dagrun_data_interval_end": null,
+  "next_dagrun_data_interval_start": null,
+  "owners": [
+    "student"
+  ],
+  "pickle_id": null,
+  "root_dag_id": null,
+  "schedule_interval": null,
+  "scheduler_lock": null,
+  "tags": [
+    {
+      "name": "hw4"
+    },
+    {
+      "name": "mlops"
+    }
+  ],
+  "timetable_description": "Never, external triggers only"
+}
+Запускаем DAG 'mlsd_hw4' с run_id = api_run_2026-01-18T21:58:36+0300...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0{
+  "conf": {},
+  "dag_id": "mlsd_hw4",
+  "dag_run_id": "api_run_2026-01-18T21:58:36+0300",
+  "data_interval_end": "2026-01-18T18:58:36.865479+00:00",
+  "data_interval_start": "2026-01-18T18:58:36.865479+00:00",
+  "end_date": null,
+  "execution_date": "2026-01-18T18:58:36.865479+00:00",
+  "external_trigger": true,
+  "last_scheduling_decision": null,
+  "logical_date": "2026-01-18T18:58:36.865479+00:00",
+  "note": null,
+  "run_type": "manual",
+  "start_date": null,
+  "state": "queued"
+}
+100   540  100   490  100    50   5051    515 --:--:-- --:--:-- --:--:--  5567100   540  100   490  100    50   5049    515 --:--:-- --:--:-- --:--:--  5510
+Ожидаем завершения DAG'а...
+Статус DAG'а: running. Ожидаем...
+Статус DAG'а: running. Ожидаем...
+Статус DAG'а: running. Ожидаем...
+Статус DAG'а: running. Ожидаем...
+Статус DAG'а: running. Ожидаем...
+Статус DAG'а: running. Ожидаем...
+✅ DAG 'mlsd_hw4' успешно выполнен.
+
+--- [ЭТАП 6/7] Запуск Model Serving в MLflow ---
+Запускаем сервер для модели 'logistic_regression_movielens' на порту 6000...
+Ожидание запуска сервера модели (до 90 секунд)...
+.✅ Сервер модели готов.
+
+--- [ЭТАП 7/7] Завершение ---
+✅ Инфраструктура, пайплайн обучения и инференс-сервис запущены.
+Для проверки стримингового предсказания запустите: python3 verify_streaming.py
+
+
+🎉🎉🎉 ПРОЕКТ УСПЕШНО ЗАПУЩЕН! 🎉🎉🎉
+
+Точки доступа к веб-интерфейсам:
+ - MinIO Console:    http://localhost:9001 (minioadmin/minioadmin)
+ - Spark Master UI:  http://localhost:8080
+ - Spark Worker UI:  http://localhost:8081
+ - Airflow UI:       http://localhost:8088 (hw4user/hw4pass)
+ - MLflow UI:        http://localhost:5000
+ - Model Endpoint:   http://localhost:6000/invocations
+ - Kafka UI:         http://localhost:8090
+ - Kafka:            localhost:29092 (external), kafka:9092 (internal)
+ - Redis:            localhost:6379 (no auth)
