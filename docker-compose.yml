@@ -6,7 +6,7 @@ services:
   # --- 1. Хранилище данных (S3) ---
   minio:
     image: minio/minio:latest
-    container_name: hw4-minio
+    container_name: mlops-minio
     # Команда для запуска Minio: запустить сервер, указать папку для данных
     # и адрес для веб-консоли.
     command: server /data --console-address ":9001"
@@ -32,7 +32,7 @@ services:
   # --- 2. Хранилище признаков (Feature Store) ---
   redis:
     image: redis:7-alpine
-    container_name: hw4-redis
+    container_name: mlops-redis
     ports:
       - "6379:6379"
     networks:
@@ -50,7 +50,7 @@ services:
       context: .
       dockerfile: ./spark/Dockerfile
     image: mlsd-spark-master:${IMAGE_TAG:-local}
-    container_name: hw4-spark-master
+    container_name: mlops-spark-master
     ports:
       - "8080:8080" # Spark Master Web UI
       - "7077:7077" # Spark Master RPC port
@@ -77,7 +77,7 @@ services:
       context: .
       dockerfile: ./spark/Dockerfile
     image: mlsd-spark-worker-1:${IMAGE_TAG:-local}
-    container_name: hw4-spark-worker-1
+    container_name: mlops-spark-worker-1
     # Воркер должен запуститься только после мастера
     depends_on:
       - spark-master
@@ -106,7 +106,7 @@ services:
 
   postgres:
     image: postgres:13
-    container_name: hw4-postgres
+    container_name: mlops-postgres
     restart: unless-stopped
     environment:
       - POSTGRES_USER=airflow
@@ -125,7 +125,7 @@ services:
   # --- 4. Kafka Cluster (KRaft Mode) ---
   kafka:
     image: apache/kafka:3.7.0
-    container_name: hw4-kafka
+    container_name: mlops-kafka
     ports:
       - "29092:29092"
     environment:
@@ -155,11 +155,11 @@ services:
   # --- 4b. Kafka UI ---
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: hw4-kafka-ui
+    container_name: mlops-kafka-ui
     ports:
       - "8090:8080"
     environment:
-      - KAFKA_CLUSTERS_0_NAME=hw4-cluster
+      - KAFKA_CLUSTERS_0_NAME=mlops-cluster
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
     networks:
       - mlsd-network
@@ -171,7 +171,7 @@ services:
   inference:
     build:
       context: ./inference
-    container_name: hw4-inference
+    container_name: mlops-inference
     depends_on:
       redis:
         condition: service_healthy
@@ -197,7 +197,7 @@ services:
       context: .
       dockerfile: ./airflow/Dockerfile
     image: mlsd-airflow:${IMAGE_TAG:-local}
-    container_name: hw4-airflow
+    container_name: mlops-airflow
     # Важно: оставляем пользователя root, чтобы у него были права писать в сокет
     user: "0:0"
     depends_on:
@@ -244,7 +244,7 @@ services:
   mlflow:
     build:
       context: ./mlflow
-    container_name: hw4-mlflow
+    container_name: mlops-mlflow
     ports:
       - "5000:5000"
       - "6000:6000"

@@ -26,7 +26,7 @@ MLFLOW_SERVICE_NAME="mlflow"
 KAFKA_SERVICE_NAME="kafka"
 INFERENCE_SERVICE_NAME="inference"
 
-DAG_ID="mlsd_hw4"
+DAG_ID="mlops_platform"
 API_USER="${AIRFLOW_API_USER}"
 API_PASS="${AIRFLOW_API_PASS}"
 API_EMAIL="${API_USER}@example.com"
@@ -43,7 +43,7 @@ wait_healthy() {
 
     local start_time=$(date +%s)
     while true; do
-        local status=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "hw4-${service_name}" 2>/dev/null || echo "not found")
+        local status=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "mlops-${service_name}" 2>/dev/null || echo "not found")
 
         if [[ "$status" == "healthy" ]]; then
             echo "✅ Сервис '$service_name' готов."

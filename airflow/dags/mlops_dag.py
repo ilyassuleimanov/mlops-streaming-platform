@@ -1,4 +1,4 @@
-# airflow/dags/hw4_dag.py
+# airflow/dags/mlops_dag.py
 
 import os
 from datetime import datetime, timedelta
@@ -19,7 +19,7 @@ ZIP_PATH = "/tmp/ml-latest-small.zip"
 EXTRACT_PATH = "/tmp/ml-latest-small" 
 MINIO_BUCKET_RAW = "movielens"
 
-# --- Новые переменные для ДЗ 4 ---
+# --- Переменные проекта ---
 MINIO_BUCKET_ML_DATA = "ml-data"       # Бакет для train/test выборок
 MINIO_BUCKET_FEATURES = "feature-store"  # Бакет для посчитанных признаков
 MINIO_BUCKET_MLFLOW = "mlflow"         # Бакет для артефактов MLflow
@@ -57,12 +57,12 @@ default_args = {
 # --- Определение DAG ---
 
 with DAG(
-    dag_id='mlsd_hw4',  # Имя DAG изменено для ДЗ 4
+    dag_id='mlops_platform',
     default_args=default_args,
     description='Full ML pipeline for MovieLens with model training',
     schedule_interval=None,
     catchup=False,
-    tags=['mlops', 'hw4'],
+    tags=['mlops', 'platform'],
 ) as dag:
 
     # Задача 1: Скачать и распаковать датасет (без изменений)
@@ -154,8 +154,8 @@ with DAG(
         task_id='train_and_save_model',
         bash_command=(
             # Запускаем скрипт обучения внутри контейнера mlflow
-            # `hw4-mlflow` - это имя контейнера из docker-compose.yml
-            "docker exec hw4-mlflow python /mlflow_app/train_model.py"
+            # `mlops-mlflow` - это имя контейнера из docker-compose.yml
+            "docker exec mlops-mlflow python /mlflow_app/train_model.py"
         ),
     )
 
