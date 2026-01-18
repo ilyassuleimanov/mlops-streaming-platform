@@ -130,36 +130,6 @@ mlops-platform/
    python3 verify_streaming.py
    ```
 
-4. **Настройка переменных окружения:**
-
-    ```bash
-    cp .env.example .env
-    # Отредактируйте .env при необходимости
-    ```
-
-5. **Полный деплой и запуск пайплайна:**
-
-    ```bash
-    ./run.sh
-    ```
-
-    Скрипт автоматически:
-    - Соберёт Docker-образы
-    - Запустит все сервисы
-    - Дождётся их готовности (healthcheck)
-    - Запустит Airflow DAG
-    - Развернёт Model Serving
-
-6. **Проверка streaming-инференса:**
-
-    В папке `verification` находятся скрипты для тестирования.
-
-    ```bash
-    cd verification
-    pip install -r requirements.txt
-    python3 verify_streaming.py
-    ```
-
 ---
 
 ## Компоненты системы
