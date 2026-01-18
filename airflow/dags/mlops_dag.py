@@ -14,9 +14,9 @@ MINIO_ROOT_PASSWORD = os.environ.get("MINIO_ROOT_PASSWORD", "minioadmin")
 
 # URL и локальные пути для датасета.
 # Для отладки используем small, для сдачи задания нужно будет поменять на ml-latest.zip
-DATASET_URL = "https://files.grouplens.org/datasets/movielens/ml-latest-small.zip"
-ZIP_PATH = "/tmp/ml-latest-small.zip"
-EXTRACT_PATH = "/tmp/ml-latest-small" 
+DATASET_URL = "https://files.grouplens.org/datasets/movielens/ml-latest.zip"
+ZIP_PATH = "/tmp/ml-latest.zip"
+EXTRACT_PATH = "/tmp/ml-latest" 
 MINIO_BUCKET_RAW = "movielens"
 
 # --- Переменные проекта ---
