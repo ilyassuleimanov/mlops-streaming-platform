@@ -250,8 +250,8 @@ services:
       - "6000:6000"
     environment:
       - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
-      - AWS_ACCESS_KEY_ID=minioadmin # <-- Лучше использовать переменные
-      - AWS_SECRET_ACCESS_KEY=minioadmin # <-- Лучше использовать переменные
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-minioadmin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
       - MLFLOW_TRACKING_URI=http://127.0.0.1:5000
     command: >
       mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root s3://mlflow/
